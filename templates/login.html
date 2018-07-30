@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script  type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script  type="text/javascript" src={% static 'js/jquery.validate.min.js' %}></script>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %} />
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+</head>
+<body >
+<div class="main">
+<form class="layui-form" action=""  method="post" style="padding-left: 500px;padding-top: 180px">
+    <h3 style="padding-left: 135px;padding-bottom: 10px">多租户管理系统</h3>
+     {% csrf_token %}
+    <div class="layui-form-item">
+        <label class="layui-form-label">用户：</label>
+        <div class="layui-input-inline">
+            <input type="text" name="phone" id="phone"required  lay-verify="required" placeholder="请输入您的电话号码" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <label class="layui-form-label">密码：</label>
+        <div class="layui-input-inline">
+            <input type="password" name="password" id="password"required lay-verify="required" placeholder="请输入密码" autocomplete="off" class="layui-input">
+        </div>
+    </div>
+    <div class="layui-form-item">
+        <div class="layui-input-block" style="padding-left: 40px">
+            <button class="layui-btn" type="button" id="submit" >登录</button>
+        </div>
+    </div>
+    <div>
+    <a href="#">忘记密码！</a> |
+    <a href="/register">注册</a>
+    </div>
+</form>
+
+
+<script>
+
+layui.use('form', function(){
+  var form = layui.form;
+
+  form.verify({
+      username: function(value, item){ //value：表单的值、item：表单的DOM对象
+        if(/(^\_)|(\__)|(\_+$)/.test(value)){
+          return '用户名首尾不能出现下划线\'_\'';
+        }
+        if(/^\d+\d+\d$/.test(value)){
+          return '用户名不能全为数字';
+        }
+      }
+
+      //我们既支持上述函数式的方式，也支持下述数组的形式
+      //数组的两个值分别代表：[正则匹配、匹配不符时的提示文字]
+      ,pass: [
+        /^[\S]{6,12}$/
+        ,'密码必须6到12位，且不能出现空格'
+      ]
+    });
+});
+ $("#submit").click(function(){
+        var phone=$('#phone').val();
+        var password=$("#password").val();
+            $.ajax({
+                url:'/loginForm/',
+                type:'POST',
+                data: {
+                    "phone":phone,
+                    "password":password
+                },
+                success: function(data) {
+                    console.log("failed")
+                    if(data=="登录成功")
+                     layer.msg(data,{icon: 6},{time:500});
+                    else
+                      layer.msg(data,{icon: 5},{time:500});
+                    if(data=="登录成功"){
+                         setTimeout(function () {
+                             console.log("success")
+                             window.location.href="/index"
+                         }, 1000)
+                    }
+                }
+            });
+    });
+</script>
+</body>
+</html>

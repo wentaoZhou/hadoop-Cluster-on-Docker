@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>多租户管理系统</title>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %}>
+    <link rel="stylesheet" href={% static 'css/bootstrap.css' %}/>
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/echarts.js' %}></script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">欢迎进入</div>
+            <div class="layui-card-body">
+                <blockquote class="layui-elem-quote">您已加入的租户有：</blockquote>
+            </div>
+            <div class="layui-card-body">
+                <table class="layui-table" lay-data="{url:'/getaddTenantList',id:'tenantInfo'}"
+                       lay-filter="tenant">
+                    <thead>
+                    <tr>
+                        <th lay-data="{field:'tenant_id', minwidth:120}">租户名</th>
+                        <th lay-data="{field:'users_id',event: 'getlabel', minwidth:150}">成员</th>
+                        <th lay-data="{field:'creator', minwidth:80}">创建者</th>
+                        <th lay-data="{field:'permissions_id', minwidth:130}">权限</th>
+                        <th lay-data="{field:'create_at', minwidth:110}">创建时间</th>
+                    </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+
+<script>
+layui.use('table', function () {
+    var table = layui.table;
+
+
+    //监听工具条
+    table.on('tool(tenant)', function (obj) {
+
+    });
+});
+
+</script>
+</html>

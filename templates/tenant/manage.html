@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>多租户管理系统</title>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %}>
+    <link rel="stylesheet" href={% static 'css/bootstrap.css' %}/>
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/echarts.js' %}></script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">欢迎进入</div>
+            <div class="layui-card-body">
+                <blockquote class="layui-elem-quote">{{ id }}租户信息</blockquote>
+                <div>
+                    <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="startCluster()">启动</a>
+                    <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="closeCluster()">关闭</a>
+                    <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="addNode()">添加节点</a>
+                    <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="addMember()">添加成员</a>
+                     <a class="layui-btn layui-btn-primary layui-btn-xs" onclick="monitor()">监控集群</a>
+                </div>
+            </div>
+            <div class="layui-card-body">
+                <table class="layui-table" lay-data="{url:'/ajaxToGetTenant?id={{ id }}',id:'tenantInfo'}"
+                       lay-filter="tenant">
+                    <thead>
+                    <tr>
+                        <th lay-data="{field:'name', minwidth:120}">节点名称</th>
+                        <th lay-data="{field:'state',event: 'getlabel', minwidth:150}">状态</th>
+                        <th lay-data="{fixed: 'right', width:178, align:'center', toolbar: '#barDemo'}">操作</th>
+                    </tr>
+                    </thead>
+                </table>
+               <script type="text/html" id="barDemo">
+                    <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="delete">删除</a>
+
+               </script>
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+
+
+<script>
+function startCluster() {
+     layer.open({
+                    title: "启动集群",
+                    content: "确认启动",
+                    btn: ['确认', '取消']
+                    , yes: function (index, layero) {
+                        //按钮【按钮一】的回调
+                        {#layer.msg('hello')#}
+                        var loadindex = layer.load(1); //换了种风格
+                        $.ajax({
+                            url: '/startHadoop?id=' + {{ id }},
+                            type: 'GET',
+                            /*data: {
+                                 "label": data.label,
+                                 "nodeCount":data.nodeCount
+                            },*/
+                            success: function (data) {
+                                console.log(data)
+                                if (data == "开启成功") {
+                                    layer.msg(data, {icon: 6}, {time: 500});
+                                    layer.close(loadindex)
+                                     setTimeout("window.location.reload()",2000)
+                                }
+                            }
+                        });
+
+                    }
+                    , btn2: function (index, layero) {
+                        //按钮【按钮二】的回调
+
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
+                });
+}
+
+function closeCluster() {
+     layer.open({
+                    title: "关闭集群",
+                    content: "确认关闭",
+                    btn: ['确认', '取消']
+                    , yes: function (index, layero) {
+                        //按钮【按钮一】的回调
+                        var loadindex = layer.load(1); //换了种风格
+                        $.ajax({
+                            url: '/stopHadoop?id=' +{{ id }},
+                            type: 'GET',
+                            success: function (data) {
+                                console.log(data)
+                                if (data == "关闭成功") {
+                                    layer.msg(data, {icon: 6}, {time: 500});
+                                    layer.close(loadindex)
+                                    setTimeout("window.location.reload()", 2000)
+                                }
+                            }
+                        });
+                    }
+                });
+}
+
+function addMember() {
+     layer.open({
+                    title: "添加成员",
+                    content: "<div class=\"layui-form-item\">\n" +
+                    "        <label class=\"layui-form-label\">用户</label>\n" +
+                    "        <div class=\"layui-input-block\">\n" +
+                    "          <input type=\"text\" id=\"phoneOrEmail\" name=\"phoneOrEmail\"  placeholder=\"请输入电话或email\" class=\"layui-input\">\n" +
+                    "        </div>\n" +
+                    "    </div>",
+                    btn: ['确认', '取消']
+                    , yes: function (index, layero) {
+                        $.ajax({
+                            url: '/ajaxToGetAddMember?phoneOrEmail=' + $("#phoneOrEmail").val() +"&tenantId={{ id }}",
+                            type: 'GET',
+                            success: function (data) {
+                                console.log(data);
+                                if (data == "添加成功!") {
+                                    layer.msg(data, {icon: 6}, {time: 500});
+                                }else {
+                                    layer.msg(data, {icon: 6}, {time: 500});
+                                }
+                            }
+
+                        });
+                    }
+                });
+}
+function addNode() {
+      layer.open({
+                    title: "添加节点",
+                    content: "确认添加一个从节点吗?",
+                    btn: ['确认', '取消']
+                    , yes: function (index, layero) {
+                        //按钮【按钮一】的回调
+                        {#layer.msg('hello')#}
+                        var loadindex = layer.load(1); //换了种风格
+                        $.ajax({
+                            url: '/addContainer?id=' + {{ id }},
+                            type: 'GET',
+                            success: function (data) {
+                                console.log(data)
+                                if (data == "添加成功") {
+                                    layer.msg(data, {icon: 6}, {time: 500});
+                                    layer.close(loadindex)
+                                }
+                                else {
+                                    layer.msg("添加失败，您的规格已经是最高了", {icon: 6}, {time: 500});
+                                    layer.close(loadindex)
+                                }
+                            }
+                        });
+
+                    }
+                    , btn2: function (index, layero) {
+                        //按钮【按钮二】的回调
+
+                        //return false 开启该代码可禁止点击该按钮关闭
+                    }
+                });
+}
+
+function monitor() {
+     self.location = '/monitorTenant?id={{ id }}';
+}
+layui.use('table', function () {
+    var table = layui.table;
+
+
+    //监听工具条
+    table.on('tool(tenant)', function (obj) {
+        var data = obj.data;
+        console.log(data.name)
+        if (obj.event === 'delete') {
+            layer.open({
+                title: "删除节点",
+                content: "确认删除该节点吗?",
+                btn: ['确认', '取消']
+                , yes: function (index, layero) {
+                    var loadindex = layer.load(1); //换了种风格
+                    //按钮【按钮一】的回调
+                    $.ajax({
+                        url: '/deleteNode?id={{ id }}/',
+                        type: 'GET',
+                        data:{
+                            deletenodename:data.name
+                        },
+                        success: function (data) {
+                            console.log(data)
+                            if (data == "删除成功"){
+                                layer.msg(data, {icon: 6}, {time: 500});
+                                 layer.close(loadindex)
+                                 setTimeout("window.location.reload()",2000)
+                            }
+                            else{
+                                layer.msg(data, {icon: 6}, {time: 500});
+                            }
+                        }
+                    });
+                }
+                , btn2: function (index, layero) {
+                    //按钮【按钮二】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        }else if(obj.event == "monitor"){
+            self.location = '/monitorTenant?id={{ id }}';
+        }
+    });
+});
+</script>
+</html>

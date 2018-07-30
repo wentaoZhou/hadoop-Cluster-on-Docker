@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>多租户管理系统</title>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %}>
+    <link rel="stylesheet" href={% static 'css/bootstrap.css' %}/>
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/echarts.js' %}></script>
+</head>
+<body>
+<div class="layui-fluid" style="background: #efedf1;">
+    <div class="layui-card-body">
+        <div style="margin-top: 20px;">
+            <a class="layui-btn layui-btn-primary layui-btn-xs" href="/tenantManage?id={{ id }}">返回</a>
+        </div>
+    </div>
+   <div class="layui-container">
+      <div class="layui-row layui-card-body">
+        <div class="layui-col-xs12">
+          <div class="grid-demo grid-demo-bg1" id="{{ id }}hadoop-master" style="height: 300px;"></div>
+        </div>
+      </div>
+      <div class="layui-row layui-card-body">
+        <div class="layui-col-xs6">
+          <div class="grid-demo grid-demo-bg1" id="{{ id }}hadoop-slave1" style="height: 300px;"></div>
+        </div>
+        <div class="layui-col-xs6">
+          <div class="grid-demo" id="{{ id }}hadoop-slave2" style="height: 300px;"></div>
+        </div>
+      </div>
+      <div class="layui-row layui-card-body">
+        <div class="layui-col-xs6">
+          <div class="grid-demo grid-demo-bg1" id="{{ id }}hadoop-slave3" style="height: 300px;"></div>
+        </div>
+        <div class="layui-col-xs6">
+          <div class="grid-demo" id="{{ id }}hadoop-slave4" style="height: 300px;"></div>
+        </div>
+      </div>
+   </div>
+</div>
+</body>
+<script>
+
+var tenantStatus = ['cpu', 'percent'];
+var nodeID = ["{{ id }}hadoop-master","{{ id }}hadoop-slave1","{{ id }}hadoop-slave2","{{ id }}hadoop-slave3","{{ id }}hadoop-slave4"];
+//请求数据的地址
+url = "/ajaxToGetAllTenantStatus/?id={{ id }}";
+function statusConfig(echart,data,node) {
+
+    var series = [];
+    for(var i = 0;i < tenantStatus.length; i++){
+        series.push({
+            // 根据名字对应到相应的系列
+            name: tenantStatus[i],
+            type:'line',
+            symbol:'none',
+            smooth: 0.4,
+            color:['#66AEDE'],
+            data: data[tenantStatus[i]]
+        });
+    }
+    echart.setOption({
+         title: {
+            text: node,
+            position:"center"
+        },
+        dataZoom: {
+            show: true,
+            start : 0
+        },
+        tooltip: {trigger: 'axis'},
+        yAxis: {
+            splitLine: { show: false },//去除网格线
+            name: ''
+        },
+        legend: {
+            data: tenantStatus
+        },
+        xAxis: {
+            name:'日期',
+            data: data.create_at
+        },
+        calculable: true,
+        series: series
+    });
+}
+
+$.ajax({
+    type: 'get',
+    url: url,
+    dataType: "json",        //返回数据形式为json
+    success : function(result) {
+         //请求成功时执行该函数内容，result即为服务器返回的json对象
+         if (result != 'err') {
+            var count = Object.keys(result).length;
+            for(var index = 0;index < count; index++){
+                var data = result[nodeID[index]];
+                statusConfig(echarts.init(document.getElementById(nodeID[index])),data,nodeID[index]);
+            }
+         }else {
+             alert("暂无数据");
+             layer.msg("暂无数据！", {icon: 6}, {time: 500});
+         }
+    },
+     error : function(errorMsg) {
+         //请求失败时执行该函数
+        {#     alert("图表请求数据失败!");#}
+     }
+});
+
+</script>
+</html>

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>多租户管理系统</title>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %}>
+    <link rel="stylesheet" href={% static 'css/bootstrap.css' %}/>
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/echarts.js' %}></script>
+</head>
+<body>
+<div class="layui-fluid">
+    <div class="layui-col-md12">
+        <div class="layui-card">
+            <div class="layui-card-header">欢迎进入</div>
+            <div class="layui-card-body">
+                <blockquote class="layui-elem-quote">我的资源</blockquote>
+            </div>
+            <div class="layui-card-body">
+                <table class="layui-table" lay-data="{url:'/getTenantUser',id:'tenantInfo'}"
+                       lay-filter="tenant">
+                    <thead>
+                    <tr>
+                        <th lay-data="{field:'tenant_id', minwidth:120}">租户名</th>
+                        <th lay-data="{field:'users_id',event: 'getlabel', minwidth:150}">成员</th>
+                        <th lay-data="{field:'creator', minwidth:80}">创建者</th>
+                        <th lay-data="{field:'permissions_id', minwidth:130}">权限</th>
+                        <th lay-data="{field:'create_at', minwidth:110}">创建时间</th>
+                    </tr>
+                    </thead>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+layui.use('table', function () {
+    var table = layui.table;
+
+    //监听工具条
+    table.on('tool(tenant)', function (obj) {
+        var data = obj.data;
+        if (obj.event === 'delete') {
+            layer.open({
+                title: "购买详情",
+                content: "是否要立即购买?",
+                btn: ['立即购买', '残忍拒绝']
+                , yes: function (index, layero) {
+                    //按钮【按钮一】的回调
+                    $.ajax({
+                        url: '/puyTenant/',
+                        type: 'GET',
+                        data: {
+                             "label": data.label,
+                             "nodeCount":data.nodeCount
+                        },
+                        success: function (data) {
+                            console.log("failed")
+                            if (data == "购买成功")
+                                layer.msg(data, {icon: 6}, {time: 500});
+                            else
+                                layer.msg(data, {icon: 5}, {time: 500});
+                            if (data == "购买成功") {
+                                setTimeout(function () {
+                                    console.log("success")
+                                    window.location.href = "/welcome"
+                                }, 1000)
+                            }
+                        }
+                    });
+                }
+                , btn2: function (index, layero) {
+                    //按钮【按钮二】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        }
+    });
+
+});
+</script>
+</html>

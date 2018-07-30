@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>多租户管理系统</title>
+    <link rel="stylesheet" href={% static 'layui-v2.2.6/layui/css/layui.css' %}>
+    <link rel="stylesheet" href={% static 'css/bootstrap.css' %}/>
+    <script type="text/javascript" src={% static 'layui-v2.2.6/layui/layui.js' %}></script>
+    <script type="text/javascript" src={% static 'js/jquery-3.3.1.min.js' %}></script>
+    <script type="text/javascript" src={% static 'js/echarts.js' %}></script>
+</head>
+<body>
+<div class="layui-fluid">
+    {% if count > 0 %}
+        <div class="layui-col-md12">
+            <div class="layui-card">
+                <div class="layui-card-header">欢迎进入</div>
+                <div class="layui-card-body">
+                    <blockquote class="layui-elem-quote">我的资源</blockquote>
+                </div>
+                <div class="layui-card-body">
+                    <table class="layui-table" lay-data="{url:'/ajaxToGetTenantInfo',id:'tenantInfo'}"
+                           lay-filter="tenant">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'id', minwidth:120}">租户名</th>
+                            <th lay-data="{field:'label',event: 'getlabel', minwidth:150}">配置</th>
+                            <th lay-data="{field:'create_at', minwidth:80}">创建时间</th>
+                            <th lay-data="{field:'create_at', minwidth:130}">过期时间</th>
+                            <th lay-data="{field:'status', minwidth:110}">状态</th>
+                            <th lay-data="{fixed: 'right', width:178, align:'center', toolbar: '#barDemo'}">操作</th>
+                        </tr>
+                        </thead>
+                    </table>
+                   <script type="text/html" id="barDemo">
+                        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="start">启动</a>
+                        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="stop">关闭</a>
+                        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="manage">管理</a>
+                   </script>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="layui-col-md12">
+                <div class="layui-card">
+                    <div class="layui-card-header">欢迎进入</div>
+                    <div class="layui-card-body">
+                        <blockquote class="layui-elem-quote">你貌似还没有申请租户哦！</blockquote>
+                    </div>
+                </div>
+                <div class="layui-card">
+                    <div class="layui-card-header">您可以有如下租户规格可选：</div>
+                    <table class="layui-table" lay-data="{url:'/static/resource.json',id:'idTest'}"
+                           lay-filter="resource">
+                        <thead>
+                        <tr>
+                            <th lay-data="{field:'hadoopVersion', width:120}">hadoop版本</th>
+                            <th lay-data="{field:'nodeCount', minwidth:150}">节点个数</th>
+                            <th lay-data="{field:'CPU', minwidth:80}">CPU</th>
+                            <th lay-data="{field:'memory', minwidth:130}">内存</th>
+                            <th lay-data="{field:'storage', minwidth:110}">磁盘空间</th>
+                            <th lay-data="{field:'price', minwidth:160}">价格</th>
+                            <th lay-data="{fixed: 'right', width:178, align:'center', toolbar: '#puy'}">操作</th>
+                        </tr>
+                        </thead>
+                    </table>
+                    <script type="text/html" id="puy">
+                        <a class="layui-btn layui-btn-primary layui-btn-xs" lay-event="detail">购买</a>
+                    </script>
+                </div>
+            </div>
+    {% endif %}
+</div>
+</body>
+
+
+<script>
+
+layui.use('table', function () {
+    var table = layui.table;
+
+    //监听工具条
+    table.on('tool(resource)', function (obj) {
+        var data = obj.data;
+        if (obj.event === 'detail') {
+            layer.open({
+                title: "购买详情",
+                content: "是否要立即购买?",
+                btn: ['立即购买', '残忍拒绝']
+                , yes: function (index, layero) {
+                    //按钮【按钮一】的回调
+                    $.ajax({
+                        url: '/puyTenant/',
+                        type: 'GET',
+                        data: {
+                             "label": data.label,
+                             "nodeCount":data.nodeCount
+                        },
+                        success: function (data) {
+                            console.log("failed")
+                            if (data == "购买成功")
+                                layer.msg(data, {icon: 6}, {time: 500});
+                            else
+                                layer.msg(data, {icon: 5}, {time: 500});
+                            if (data == "购买成功") {
+                                setTimeout(function () {
+                                    console.log("success")
+                                    window.location.href = "/welcome"
+                                }, 1000)
+                            }
+                        }
+                    });
+                }
+                , btn2: function (index, layero) {
+                    //按钮【按钮二】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        }
+    });
+
+    //监听工具条
+    table.on('tool(tenant)', function (obj) {
+        var data = obj.data;
+        if (obj.event === 'start') {
+            layer.open({
+                title: "启动集群",
+                content: "确认启动",
+                btn: ['确认', '取消']
+                , yes: function (index, layero) {
+                    console.log("启动")
+                    //按钮【按钮一】的回调
+                    $.ajax({
+                        url: '/startHadoop?id='+data.id,
+                        type: 'GET',
+                        /*data: {
+                             "label": data.label,
+                             "nodeCount":data.nodeCount
+                        },*/
+                        success: function (data) {
+                            console.log(data)
+                            /*if (data == "开启成功"){
+                                layer.msg(data, {icon: 6}, {time: 500});
+
+                            }*/
+                        }
+                    });
+                }
+                , btn2: function (index, layero) {
+                    //按钮【按钮二】的回调
+
+                    //return false 开启该代码可禁止点击该按钮关闭
+                }
+            });
+        }else if (obj.event === 'stop') {
+            layer.open({
+                title: "关闭集群",
+                content: "确认关闭",
+                btn: ['确认', '取消']
+                , yes: function (index, layero) {
+                    //按钮【按钮一】的回调
+                    $.ajax({
+                        url: '/startHadoop?id='+data.id,
+                        type: 'GET',
+                        data: {
+                             "label": data.label,
+                             "nodeCount":data.nodeCount
+                        },
+                        success: function (data) {
+                            console.log("failed")
+                            if (data == "购买成功")
+                                layer.msg(data, {icon: 6}, {time: 500});
+                            else
+                                layer.msg(data, {icon: 5}, {time: 500});
+                            if (data == "购买成功") {
+                                setTimeout(function () {
+                                    console.log("success")
+                                    window.location.href = "/welcome"
+                                }, 1000)
+                            }
+                        }
+                    });
+                }
+            });
+        }else if (obj.event === 'manage') {
+            self.location='/tenantManage?id=' + data.id;
+        }else if(obj.event === 'getlabel'){
+          $.getJSON("/static/resource.json", function (data1){
+              var strHtml = "";
+
+              $.each(data1.data, function (infoIndex, info){
+                  if(data.label == info.label){
+
+                      strHtml += "hadoopVersion ：" + info.hadoopVersion + "<br/>";
+                      strHtml += "nodeCount ：" + info.nodeCount + "<br/>";
+                      strHtml += "CPU ：" + info.CPU + "<br/>";
+                      strHtml += "memory ：" + info.memory + "<br/>";
+                      strHtml += "storage ：" + info.storage + "<br/>";
+                      strHtml += "price ：" + info.price + "<br/>";
+                  }
+              });
+              //显示处理后的数据
+               layer.open({
+
+                    title: "租户详情",
+                    content:strHtml
+               });
+            });
+        }
+    });
+});
+</script>
+</html>

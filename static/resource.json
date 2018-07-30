@@ -1,0 +1,34 @@
+{
+  "code": 0,
+  "msg": "请求数据",
+  "count": 3,
+  "data": [
+    {
+      "label":1,
+      "hadoopVersion": "2.7.2",
+      "nodeCount": "2",
+      "CPU": "1核",
+      "memory": "1024M",
+      "storage": "20G",
+      "price": "30元/月"
+    },
+    {
+      "label":2,
+      "hadoopVersion": "2.7.2",
+      "nodeCount": "3",
+      "CPU": "1核",
+      "memory": "1536M",
+      "storage": "30G",
+      "price": "45元/月"
+    },
+    {
+      "label":3,
+      "hadoopVersion": "2.7.2",
+      "nodeCount": "4",
+      "CPU": "2核",
+      "memory": "2048M",
+      "storage": "40G",
+      "price": "60元/月"
+    }
+  ]
+}
